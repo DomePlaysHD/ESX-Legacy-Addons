@@ -209,7 +209,7 @@ end
 Bare identifier shared by char/license forms.
 Returns the underlying FiveM/ESX identifier without assuming
 a specific multicharacter prefix
-]] --
+]]--
 local function getUnderlyingIdentifier(identifier)
 	if type(identifier) ~= "string" or identifier == "" then
 		return nil
@@ -295,7 +295,7 @@ end
 --[[
 We only need this to prevent currently-online characters from also
 appearing as OFFLINE results.
-]] --
+]]--
 local function getOnlineCharacterIdentifiers()
 	local identifiers = {}
 	local count = 0

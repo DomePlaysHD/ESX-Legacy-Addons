@@ -200,8 +200,7 @@ ESX.RegisterCommand(
 			return
 		end
 
-		local plate = model and model ~= "" and Helpers.generatePlate() or
-			ESX.Math.Trim(GetVehicleNumberPlateText(vehicle))
+		local plate = model and model ~= "" and Helpers.generatePlate() or ESX.Math.Trim(GetVehicleNumberPlateText(vehicle))
 
 		if not plate or plate == "" or Helpers.isPlateTaken(plate) then
 			plate = Helpers.generatePlate()

@@ -193,8 +193,7 @@ local function updateBanExpiry(identifier, expiresAt)
 
     if expiresAt then
         for i = 1, #variants do
-            MySQL.update.await('UPDATE bans SET expires_at = FROM_UNIXTIME(?) WHERE identifier = ?',
-                { expiresAt, variants[i] })
+            MySQL.update.await('UPDATE bans SET expires_at = FROM_UNIXTIME(?) WHERE identifier = ?', { expiresAt, variants[i] })
         end
 
         return true
@@ -584,8 +583,7 @@ Helpers.registerCallback('esx-adminmenu:server:ban:offline', function(source, da
     local ok, banId = pcall(insertBan, normalizedIdentifier, reason, adminName, seconds, bannedAt)
 
     if not ok or not banId then
-        print(('[esx-adminmenu] Failed to persist offline ban for %s: %s'):format(tostring(normalizedIdentifier),
-            tostring(banId)))
+        print(('[esx-adminmenu] Failed to persist offline ban for %s: %s'):format(tostring(normalizedIdentifier), tostring(banId)))
         return { success = false, err = TranslateCap('failed_persist_ban'), isAdmin = true }
     end
 
@@ -761,8 +759,7 @@ local function setVehicleImpounded(plate, impoundName)
 
     appendParams(params, plateParams)
 
-    local affected = Helpers.safeUpdate(
-        ('UPDATE owned_vehicles SET stored = 1, parking = NULL, pound = ? WHERE %s'):format(condition), params)
+    local affected = Helpers.safeUpdate(('UPDATE owned_vehicles SET stored = 1, parking = NULL, pound = ? WHERE %s'):format(condition), params)
 
     if affected == nil then
         return { success = false, err = TranslateCap('failed_impound_vehicle') }
@@ -804,8 +801,7 @@ Helpers.registerCallback('esx-adminmenu:server:vehicleImpound', function(source,
 end)
 
 Helpers.registerCallback('esx-adminmenu:server:vehicleUnimpound', function(source, data)
-    return vehicleUpdate(source, data or {},
-        'UPDATE owned_vehicles SET stored = 1, parking = NULL, pound = NULL WHERE %s', {}, 'vehicleManagement')
+    return vehicleUpdate(source, data or {}, 'UPDATE owned_vehicles SET stored = 1, parking = NULL, pound = NULL WHERE %s', {}, 'vehicleManagement')
 end)
 
 Helpers.registerCallback('esx-adminmenu:server:vehicleDelete', function(source, data)
@@ -844,14 +840,12 @@ function Actions.Notify(src, data)
         return { success = false, err = TranslateCap('player_not_online'), playerOnline = false, isAdmin = true }
     end
 
-    local message = limitString(data.notificationContent, getLimits().MaxNotificationLength,
-        TranslateCap('notification_by_admin'))
+    local message = limitString(data.notificationContent, getLimits().MaxNotificationLength, TranslateCap('notification_by_admin'))
     local notificationType = normalizeNotificationType(data.notificationType)
     local duration = math.floor(clampNumber(data.duration, 1000, getLimits().MaxNotificationDuration or 30000, 5000))
     local title = limitString(data.notificationTitle, 80, '')
 
-    TriggerClientEvent('esx:showNotification', targetId, message, notificationType, duration,
-        title ~= '' and title or nil, 'top-left')
+    TriggerClientEvent('esx:showNotification', targetId, message, notificationType, duration, title ~= '' and title or nil, 'top-left')
 
     return { success = true, playerOnline = true, isAdmin = true }
 end
@@ -994,8 +988,7 @@ end)
 
 regServer('kickAll', function(src, payload)
     local reason =
-        limitString(payload.reason, getLimits().MaxReasonLength,
-            (Config.ServerManagement and Config.ServerManagement.DefaultKickReason) or TranslateCap('kicked_by_admin'))
+        limitString(payload.reason, getLimits().MaxReasonLength, (Config.ServerManagement and Config.ServerManagement.DefaultKickReason) or TranslateCap('kicked_by_admin'))
 
     for _, playerSource in ipairs(GetPlayers()) do
         local targetId = tonumber(playerSource)
@@ -1026,8 +1019,7 @@ regServer('notifyAll', function(_, payload)
     local duration = math.floor(clampNumber(payload.duration, 1000, getLimits().MaxNotificationDuration or 30000, 5000))
     local title = limitString(payload.title, 80, '')
 
-    TriggerClientEvent('esx:showNotification', -1, message, notificationType, duration, title ~= '' and title or nil,
-        'top-left')
+    TriggerClientEvent('esx:showNotification', -1, message, notificationType, duration, title ~= '' and title or nil, 'top-left')
     return { success = true }
 end)
 
@@ -1063,13 +1055,7 @@ function Actions.ServerManagement(src, data)
     -- Any client can invoke a server callback, so a denial here is a genuine
     -- abuse signal and is worth recording.
     if not Helpers.hasFeaturePermission(src, 'serverManagement') then
-        Logs.record({
-            namespace = 'serverManagement',
-            action = action,
-            actor = src,
-            success = false,
-            err = TranslateCap('insufficient_permissions')
-        })
+        Logs.record({namespace = 'serverManagement', action = action, actor = src, success = false, err = TranslateCap('insufficient_permissions')})
         return { success = false, err = TranslateCap('insufficient_permissions') }
     end
 
@@ -1082,37 +1068,18 @@ function Actions.ServerManagement(src, data)
     local permission = getServerActionPermission(action)
 
     if not permission then
-        Logs.record({
-            namespace = 'serverManagement',
-            action = action,
-            actor = src,
-            success = false,
-            err = TranslateCap('action_permission_not_configured')
-        })
+        Logs.record({namespace = 'serverManagement', action = action, actor = src, success = false, err = TranslateCap('action_permission_not_configured')})
         return { success = false, err = TranslateCap('action_permission_not_configured') }
     end
 
     if not Helpers.hasFeaturePermission(src, permission) then
-        Logs.record({
-            namespace = 'serverManagement',
-            action = action,
-            actor = src,
-            success = false,
-            err = TranslateCap('insufficient_permissions')
-        })
+        Logs.record({namespace = 'serverManagement', action = action, actor = src, success = false, err = TranslateCap('insufficient_permissions')})
         return { success = false, err = TranslateCap('insufficient_permissions') }
     end
 
     local result = handler(src, data.payload or {})
 
-    Logs.record({
-        namespace = 'serverManagement',
-        action = action,
-        actor = src,
-        success = type(result) ~= 'table' or result.success ~= false,
-        err = type(result) == 'table' and result.err or nil,
-        payload = data.payload,
-    })
+    Logs.record({namespace = 'serverManagement', action = action, actor = src, success = type(result) ~= 'table' or result.success ~= false, err = type(result) == 'table' and result.err or nil, payload = data.payload})
 
     return result
 end
@@ -1214,16 +1181,14 @@ regPlayer('takeMoney', {
 
 regPlayer('setHealth', {
     handler = function(ctx)
-        TriggerClientEvent('esx-adminmenu:client:setPlayerStats', ctx.targetId,
-            clampNumber(ctx.payload.amount, 0, 100, 100), nil)
+        TriggerClientEvent('esx-adminmenu:client:setPlayerStats', ctx.targetId, clampNumber(ctx.payload.amount, 0, 100, 100), nil)
         return { success = true, playerOnline = true }
     end,
 })
 
 regPlayer('setArmor', {
     handler = function(ctx)
-        TriggerClientEvent('esx-adminmenu:client:setPlayerStats', ctx.targetId, nil,
-            clampNumber(ctx.payload.amount, 0, 100, 100))
+        TriggerClientEvent('esx-adminmenu:client:setPlayerStats', ctx.targetId, nil, clampNumber(ctx.payload.amount, 0, 100, 100))
         return { success = true, playerOnline = true }
     end,
 })
@@ -1474,13 +1439,7 @@ function Actions.PlayerAction(src, data)
     local action = type(data.action) == 'string' and data.action or 'unknown'
 
     if not Helpers.hasPermission(src) then
-        Logs.record({
-            namespace = 'playerActions',
-            action = action,
-            actor = src,
-            success = false,
-            err = TranslateCap('insufficient_permissions')
-        })
+        Logs.record({namespace = 'playerActions', action = action, actor = src, success = false, err = TranslateCap('insufficient_permissions')})
         return { success = false, err = TranslateCap('insufficient_permissions') }
     end
 
@@ -1496,26 +1455,12 @@ function Actions.PlayerAction(src, data)
     local permission = Helpers.getActionPermission('playerActions', action)
 
     if not permission then
-        Logs.record({
-            namespace = 'playerActions',
-            action = action,
-            actor = src,
-            target = targetId,
-            success = false,
-            err = TranslateCap('action_permission_not_configured')
-        })
+        Logs.record({namespace = 'playerActions', action = action, actor = src, target = targetId, success = false, err = TranslateCap('action_permission_not_configured')})
         return { success = false, err = TranslateCap('action_permission_not_configured'), playerOnline = target ~= nil }
     end
 
     if not Helpers.hasFeaturePermission(src, permission) then
-        Logs.record({
-            namespace = 'playerActions',
-            action = action,
-            actor = src,
-            target = targetId,
-            success = false,
-            err = TranslateCap('insufficient_permissions')
-        })
+        Logs.record({namespace = 'playerActions', action = action, actor = src, target = targetId, success = false, err = TranslateCap('insufficient_permissions')})
         return { success = false, err = TranslateCap('insufficient_permissions'), playerOnline = target ~= nil }
     end
 
@@ -1537,16 +1482,7 @@ function Actions.PlayerAction(src, data)
         Helpers.addRecentPlayer(targetId, 'online')
     end
 
-    Logs.record({
-        namespace = 'playerActions',
-        action = action,
-        actor = src,
-        target = targetIdentifier,
-        targetName = targetName,
-        success = type(result) ~= 'table' or result.success ~= false,
-        err = type(result) == 'table' and result.err or nil,
-        payload = data.payload,
-    })
+    Logs.record({namespace = 'playerActions', action = action, actor = src, target = targetIdentifier, targetName = targetName, success = type(result) ~= 'table' or result.success ~= false, err = type(result) == 'table' and result.err or nil, payload = data.payload})
 
     return result
 end
